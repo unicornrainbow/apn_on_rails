@@ -1,0 +1,12 @@
+Description:
+    Generate migrations needed to create APN tables
+
+Example:
+    rails generate apn_on_rails:migrations
+
+    This will create:
+        db/migrate/<timestamp>_create_apn_devices.rb
+        db/migrate/<timestamp>_create_apn_notifications.rb
+        db/migrate/<timestamp>_create_apn_group_notifications.rb
+        ...
+        

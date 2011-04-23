@@ -142,10 +142,13 @@ class APN::App < APN::Base
     end 
   end
   
+  def self.log_connection_exception(ex)
+    Rails.logger.error ex.message
+  end
   
   protected
   def log_connection_exception(ex)
-    puts ex.message
+    Rails.logger.error ex.message
   end
     
 end

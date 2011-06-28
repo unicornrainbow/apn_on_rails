@@ -101,6 +101,14 @@ Or, if you like to live on the edge:
   config.gem 'PRX-apn_on_rails', :lib => 'apn_on_rails', :source => 'http://gems.github.com'
 </pre></code>
 
+h3. Rails3 Bundler setup:
+
+If you are using rails3 you just need to add the following line to your Gemfile
+
+<pre><code>
+  gem 'apn_on_rails', :git => 'https://github.com/timsu/apn_on_rails.git'
+</code></pre>
+
 h2. Setup and Configuration:
 
 Once you have the gem installed via your favorite gem installation, you need to require it so you can
@@ -128,6 +136,12 @@ Now, to create the tables you need for APN on Rails, run the following task:
 <pre><code>
   $ ruby script/generate apn_migrations
 </pre></code>
+
+If you are using rails3, run the following task:
+
+<pre><code>
+  $ rails generate apn_on_rails:migrations
+</code></pre>
 
 APN on Rails uses the Configatron gem, http://github.com/markbates/configatron/tree/master, 
 to configure itself. (With the change to multi-app support, the certifications are stored in the 
@@ -167,6 +181,12 @@ If you are upgrading to a new version of APN on Rails you should always run:
 <pre><code>
   $ ruby script/generate apn_migrations
 </pre></code>
+
+or the following one if you are using rails3:
+
+<pre><code>
+  $ rails generate apn_on_rails:migrations
+</code></pre>
 
 That way you ensure you have the latest version of the database tables needed.
 (There is an unaddressed problem in which migration 002 was modified in the repo to add the column custom_properties.

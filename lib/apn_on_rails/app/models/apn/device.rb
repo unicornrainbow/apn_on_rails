@@ -11,7 +11,7 @@
 class APN::Device < APN::Base
   
   belongs_to :app, :class_name => 'APN::App'
-  has_many :notifications, :class_name => 'APN::Notification'
+  has_many :notifications, :class_name => 'APN::Notification', :dependent => :destroy
   has_many :unsent_notifications, :class_name => 'APN::Notification', :conditions => 'sent_at is null'
   
   validates_uniqueness_of :token, :scope => :app_id

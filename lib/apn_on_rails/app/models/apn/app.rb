@@ -37,18 +37,20 @@ class APN::App < APN::Base
   def self.send_notifications_for_certs
     cert_column = (RAILS_ENV == 'production' ? 'apn_prod_cert' : 'apn_dev_cert')
     apps = APN::App.all(
-      :conditions => "apn_apps.#{cert_column} is not null",
-      :include => { :devices => :notifications }
+      :conditions => "apn_apps.#{cert_column} is not null and apn_notifications.sent_at is null",
+      :joins => { :devices => :notifications }
     )
 
     begin
       apps.each do |app|
         APN::Connection.open_for_delivery({:cert => app.cert}) do |conn, sock|
           app.devices.each do |dev|
-            dev.unsent_notifications.each do |noty|
-              conn.write(noty.message_for_sending)
-              noty.sent_at = Time.now
-              noty.save
+            dev.notifications.each do |noty|
+              if noty.sent_at.blank?
+                conn.write(noty.message_for_sending)
+                noty.sent_at = Time.now
+                noty.save
+              end
             end
           end
         end
@@ -61,17 +63,19 @@ class APN::App < APN::Base
   def self.send_notifications_for_cert(the_cert, app_id)
     # unless self.unsent_notifications.nil? || self.unsent_notifications.empty?
       if (app_id == nil)
-        conditions = "app_id is null"
+        conditions = "apn_devices.app_id is null and apn_notifications.sent_at is null"
       else 
-        conditions = ["app_id = ?", app_id]
+        conditions = ["apn_devices.app_id = ? and apn_notifications.sent_at is null", app_id]
       end
       begin
         APN::Connection.open_for_delivery({:cert => the_cert}) do |conn, sock|
-          APN::Device.find_each(:conditions => conditions, :include => :notifications) do |dev|
-            dev.unsent_notifications.each do |noty|
-              conn.write(noty.message_for_sending)
-              noty.sent_at = Time.now
-              noty.save
+          APN::Device.find_each(:conditions => conditions, :joins => :notifications) do |dev|
+            dev.notifications.each do |noty|
+              if noty.sent_at.blank?
+                conn.write(noty.message_for_sending)
+                noty.sent_at = Time.now
+                noty.save
+              end
             end
           end
         end

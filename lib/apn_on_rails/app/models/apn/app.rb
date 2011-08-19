@@ -27,7 +27,7 @@ class APN::App < APN::Base
   end
   
   def self.send_notifications
-    apps = APN::App.all 
+    apps = APN::App.all(:include => { :devices => :notifications })
     apps.each do |app|
       app.send_notifications
     end

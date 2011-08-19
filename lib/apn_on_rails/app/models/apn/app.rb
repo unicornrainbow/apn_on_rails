@@ -27,13 +27,34 @@ class APN::App < APN::Base
   end
   
   def self.send_notifications
-    apps = APN::App.all
-    apps.each do |app|
-      app.send_notifications
-    end
+    APN::App.send_notifications_for_certs
     if !configatron.apn.cert.blank?
       global_cert = File.read(configatron.apn.cert)
       send_notifications_for_cert(global_cert, nil)
+    end
+  end
+
+  def self.send_notifications_for_certs
+    cert_column = (RAILS_ENV == 'production' ? 'apn_prod_cert' : 'apn_dev_cert')
+    apps = APN::App.all(
+      :conditions => "apn_apps.#{cert_column} is not null",
+      :include => { :devices => :notifications }
+    )
+
+    begin
+      apps.each do |app|
+        APN::Connection.open_for_delivery({:cert => app.cert}) do |conn, sock|
+          app.devices.each do |dev|
+            dev.unsent_notifications.each do |noty|
+              conn.write(noty.message_for_sending)
+              noty.sent_at = Time.now
+              noty.save
+            end
+          end
+        end
+      end
+    rescue Exception => e
+      log_connection_exception(e)
     end
   end
   

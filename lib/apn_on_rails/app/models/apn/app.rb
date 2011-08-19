@@ -27,7 +27,7 @@ class APN::App < APN::Base
   end
   
   def self.send_notifications
-    apps = APN::App.all(:include => { :devices => :notifications })
+    apps = APN::App.all
     apps.each do |app|
       app.send_notifications
     end
@@ -46,7 +46,7 @@ class APN::App < APN::Base
       end
       begin
         APN::Connection.open_for_delivery({:cert => the_cert}) do |conn, sock|
-          APN::Device.find_each(:conditions => conditions) do |dev|
+          APN::Device.find_each(:conditions => conditions, :include => :notifications) do |dev|
             dev.unsent_notifications.each do |noty|
               conn.write(noty.message_for_sending)
               noty.sent_at = Time.now
